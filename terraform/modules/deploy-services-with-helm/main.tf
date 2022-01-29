@@ -116,5 +116,7 @@ resource "helm_release" "message-app" {
     name  = "revision"
     value = "v4-${timestamp()}"
   }    
+
+  depends_on = [ helm_release.rabbitmq ]
  
 }
