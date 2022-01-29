@@ -8,6 +8,8 @@
 locals {
    env = {
       default = {
+        engine_replicas = 1
+        user_interface_replicas = 1
       }
       dev = {
       }
@@ -18,6 +20,8 @@ locals {
       preprod = {
       }
       prod = {
+        engine_replicas = 5
+        user_interface_replicas = 5
       }
    }
    environment = contains(keys(local.env), terraform.workspace) ? terraform.workspace : "default"
@@ -52,5 +56,10 @@ module "deploy-services-with-helm" {
   depends_on = [ module.push-docker-services ]
 
   environment = local.environment
+  docker_user_interface_tag = module.build-docker-services.docker_user_interface_tag
+  docker_engine_tag = module.build-docker-services.docker_engine_tag
+
+  engine_replicas = local.workspace.engine_replicas
+  user_interface_replicas = local.workspace.user_interface_replicas
 
 }

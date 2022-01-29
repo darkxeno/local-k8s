@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Values.userInterface.serviceName }}
+    release: {{ .Release.Name }}
+  name: {{ required "Missing userInterface.serviceName" .Values.userInterface.serviceName }}
+spec:
+  ports:
+  - port: {{ required "Missing userInterface.port" .Values.userInterface.port }}
+    protocol: TCP
+    targetPort: {{ .Values.userInterface.port }}
+  selector:
+    app: {{ .Values.userInterface.serviceName }}
+    release: {{ .Release.Name }}

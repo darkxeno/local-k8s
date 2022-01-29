@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-interface
+  labels:
+    app: user-interface
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ required "Missing userInterface.replicas" .Values.userInterface.replicas }}
+  selector:
+    matchLabels:
+      app: {{ required "Missing userInterface.serviceName" .Values.userInterface.serviceName }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.userInterface.serviceName }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: user-interface
+        image: "{{ required "Missing userInterface.image.registry" .Values.userInterface.image.registry }}/{{ required "Missing userInterface.image.name" .Values.userInterface.image.name }}:{{ required "Missing userInterface.image.tag" .Values.userInterface.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 350Mi
+        ports:
+          - name: http-port
+            containerPort: {{ required "Missing userInterface.port" .Values.userInterface.port }}
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http-port
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        env:
+          - name: BROKER_HOST
+            value: "{{ .Values.rabbitmq.serviceName }}"
+          - name: BROKER_PORT
+            value: "{{ .Values.rabbitmq.port }}"

@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: message-app-ingress
+  labels:
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 1m  
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security : max-age=63072000; includeSubDomains; preload";
+      more_set_headers "Cache-Control: no-store";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Xss-Protection: 1";
+      more_set_headers "Content-Security-Policy: default-src 'self'"
+      more_set_headers "X-Frame-Options: DENY";
+spec:
+  rules:
+  - host: message-app.info
+    http:
+      paths:
+      - backend:
+          service: 
+            name: engine
+            port: 
+              number: {{ .Values.engine.port }}              
+        path: /api/engine
+        pathType: ImplementationSpecific
+
+      - backend:
+          service: 
+            name: user-interface
+            port: 
+              number: {{ .Values.userInterface.port }}
+        path: /api/user-interface
+        pathType: ImplementationSpecific        

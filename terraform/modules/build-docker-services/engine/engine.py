@@ -15,7 +15,8 @@ RESULT_ROUTING_KEY = "result"
 SERVICE_NAME = "engine"
 BROKER_HOST = os.environ.get('BROKER_HOST')
 BROKER_PORT = os.environ.get('BROKER_PORT')
-
+BROKER_USER = os.environ.get('BROKER_USER')
+BROKER_PASSWORD = os.environ.get('BROKER_PASSWORD')
 
 # LOGGING
 logging.basicConfig(
@@ -39,13 +40,15 @@ def callback(ch, method, properties, body):
         time.sleep(parsed_body["job_payload"]["value"])
     raise DoneConsuming("got job and processed")
 
+broker_credentials = pika.PlainCredentials(BROKER_USER, BROKER_PASSWORD)
 
 """
 user -> x -> engine
 """
 job_consume_connection = pika.BlockingConnection(
     pika.ConnectionParameters(host=BROKER_HOST,
-                              port=BROKER_PORT)
+                              port=BROKER_PORT,
+                              credentials=broker_credentials)
 )
 job_consume_channel = job_consume_connection.channel()
 
@@ -68,7 +71,8 @@ user <- x <- engine
 result_emit_connection = pika.BlockingConnection(
     pika.ConnectionParameters(
         host=BROKER_HOST,
-        port=BROKER_PORT
+        port=BROKER_PORT,
+        credentials=broker_credentials
     )
 )
 result_emit_channel = result_emit_connection.channel()

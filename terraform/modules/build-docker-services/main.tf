@@ -27,6 +27,7 @@ locals {
   user_interface_tag = "${local.registry}/user_interface:${local.branch}-${local.commit_id}"
   label = {
     author : "Constantino Fernandez Traba"
+    revision: "V2"
   }
   
 }

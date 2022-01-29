@@ -93,7 +93,7 @@ resource "kubernetes_namespace" "app-namespace" {
 
 resource "helm_release" "message-app" {
   name       = "message-app"
-  chart      = "${path.module}/helm-chart/chart"
+  chart      = "${path.module}/helm-chart"
 
   namespace = local.app_namespace
 
@@ -101,6 +101,31 @@ resource "helm_release" "message-app" {
     "${file("${path.module}/helm-chart/values/values-default.yaml")}",
     "${file("${path.module}/helm-chart/values/values-${var.environment}.yaml")}"
   ]
+
+  set {
+    name  = "engine.image.tag"
+    value = replace(var.docker_engine_tag, "/^.*:/", "")
+  }
+
+  set {
+    name  = "engine.replicas"
+    value = var.engine_replicas
+  }   
+
+  set {
+    name  = "userInterface.image.tag"
+    value = replace(var.docker_user_interface_tag, "/^.*:/", "")
+  }
+
+  set {
+    name  = "userInterface.replicas"
+    value = var.user_interface_replicas
+  }  
+
+  set {
+    name  = "revision"
+    value = "v4-${timestamp()}"
+  }    
  
 }
 
@@ -116,7 +141,7 @@ resource "helm_release" "rabbitmq" {
   set {
     name  = "service.port"
     value = local.default_values.rabbitmq.port
-  }    
+  } 
 
   depends_on = [ kubernetes_namespace.app-namespace ]
 }

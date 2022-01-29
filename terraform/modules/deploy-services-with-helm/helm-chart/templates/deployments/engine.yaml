@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine
+  labels:
+    app: engine
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ required "Missing engine.replicas" .Values.engine.replicas }}
+  selector:
+    matchLabels:
+      app: {{ required "Missing engine.serviceName" .Values.engine.serviceName }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+#      annotations:
+#        checksum/config: {{- /* include (print $.Template.BasePath "/secrets/engine.yaml") . | sha256sum  */}}
+      labels:
+        app: {{ .Values.engine.serviceName }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: engine
+        image: "{{ required "Missing engine.image.registry" .Values.engine.image.registry }}/{{ required "Missing engine.image.name" .Values.engine.image.name }}:{{ required "Missing engine.image.tag" .Values.engine.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+            memory: 350Mi
+        ports:
+          - name: http-port
+            containerPort: {{ .Values.engine.port }}
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http-port
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        env:
+          - name: BROKER_HOST
+            value: "{{ .Values.rabbitmq.serviceName }}"
+          - name: BROKER_PORT
+            value: "{{ .Values.rabbitmq.port }}"

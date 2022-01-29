@@ -1,0 +1,27 @@
+
+# common values shared accross environments goes here
+
+revision: "v1" # allows to force a deployment when there are no code changes
+
+engine:
+  port: 4000
+  serviceName: engine
+  replicas: 1
+  image:
+    registry: localhost:5000
+    name: engine
+    tag: develop-latest
+
+
+userInterface:
+  port: 4001
+  serviceName: user-interface
+  replicas: 1
+  image:
+    registry: localhost:5000
+    name: user_interface
+    tag: develop-latest  
+
+rabbitmq:
+  port: 5671
+  serviceName: rabbitmq
