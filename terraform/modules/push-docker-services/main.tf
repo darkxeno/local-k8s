@@ -11,7 +11,7 @@ locals {
   EOT  
 }
 
-resource "null_resource" "minikube" {
+resource "null_resource" "load-docker-images" {
 
   triggers = {
     script_sha1 = sha1(local.load_images_to_minikube_script)

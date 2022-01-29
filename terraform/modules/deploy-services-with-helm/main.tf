@@ -38,48 +38,6 @@ resource "null_resource" "helm-tools" {
   }
   
 }
-/*
-resource "kubernetes_namespace" "ingress-nginx-namespace" {
-  metadata {
-    name = local.nginx_ingress_namespace
-  }
-
-  depends_on = [ null_resource.helm-tools ]
-}
-
-resource "helm_release" "nginx_ingress" {
-  name       = "nginx-ingress"
-  # run this first: `helm repo add nginx-stable https://helm.nginx.com/stable`
-  //repository = "https://helm.nginx.com/stable"
-  chart      = "nginx-stable/nginx-ingress"
-  version    = "0.11.3"
-
-  namespace = local.nginx_ingress_namespace
-
-  set {
-    name  = "controller.metrics.serviceMonitor.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "controller.metrics.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "controller.setAsDefaultIngress"
-    value = "true"
-  }
-
-
-  set {
-    name  = "controller.replicaCount"
-    value = "2"
-  }  
-
-  depends_on = [ kubernetes_namespace.ingress-nginx-namespace ]
-}
-*/
 
 
 resource "kubernetes_namespace" "app-namespace" {
@@ -88,6 +46,28 @@ resource "kubernetes_namespace" "app-namespace" {
   }
 
   depends_on = [ null_resource.helm-tools ]
+}
+
+resource "helm_release" "rabbitmq" {
+  name       = "rabbitmq"
+  
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "rabbitmq"
+  version    = "8.27.0"
+
+  namespace = local.app_namespace
+
+  set {
+    name  = "service.port"
+    value = local.default_values.rabbitmq.port
+  } 
+
+  set {
+    name  = "auth.password"
+    value = var.rabbitmq_password
+  }   
+
+  depends_on = [ kubernetes_namespace.app-namespace ]
 }
 
 
@@ -120,6 +100,11 @@ resource "helm_release" "message-app" {
   set {
     name  = "userInterface.replicas"
     value = var.user_interface_replicas
+  }
+
+  set {
+    name  = "rabbitmq.auth.password"
+    value = var.rabbitmq_password
   }  
 
   set {
@@ -127,21 +112,4 @@ resource "helm_release" "message-app" {
     value = "v4-${timestamp()}"
   }    
  
-}
-
-resource "helm_release" "rabbitmq" {
-  name       = "rabbitmq"
-  
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "rabbitmq"
-  version    = "8.27.0"
-
-  namespace = local.app_namespace
-
-  set {
-    name  = "service.port"
-    value = local.default_values.rabbitmq.port
-  } 
-
-  depends_on = [ kubernetes_namespace.app-namespace ]
 }

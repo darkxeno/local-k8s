@@ -14,8 +14,8 @@ spec:
       release: {{ .Release.Name }}
   template:
     metadata:
-#      annotations:
-#        checksum/config: {{- /* include (print $.Template.BasePath "/secrets/engine.yaml") . | sha256sum  */}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets/rabbitmq-credentials.yaml") . | sha256sum  }}
       labels:
         app: {{ .Values.engine.serviceName }}
         release: {{ .Release.Name }}
@@ -24,6 +24,7 @@ spec:
       - name: engine
         image: "{{ required "Missing engine.image.registry" .Values.engine.image.registry }}/{{ required "Missing engine.image.name" .Values.engine.image.name }}:{{ required "Missing engine.image.tag" .Values.engine.image.tag }}"
         imagePullPolicy: IfNotPresent
+
         resources:
           requests:
             cpu: 100m
@@ -31,18 +32,34 @@ spec:
           limits:
             cpu: 300m
             memory: 350Mi
+
         ports:
           - name: http-port
             containerPort: {{ .Values.engine.port }}
             protocol: TCP
+
         livenessProbe:
           httpGet:
-            path: /health
+            path: /is-alive
             port: http-port
           initialDelaySeconds: 30
           periodSeconds: 20
+
         env:
           - name: BROKER_HOST
             value: "{{ .Values.rabbitmq.serviceName }}"
+
           - name: BROKER_PORT
             value: "{{ .Values.rabbitmq.port }}"
+
+          - name: BROKER_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq-credentials
+                key: username
+
+          - name: BROKER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq-credentials
+                key: password           

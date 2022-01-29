@@ -62,4 +62,6 @@ module "deploy-services-with-helm" {
   engine_replicas = local.workspace.engine_replicas
   user_interface_replicas = local.workspace.user_interface_replicas
 
+  rabbitmq_password = var.rabbitmq_password
+
 }

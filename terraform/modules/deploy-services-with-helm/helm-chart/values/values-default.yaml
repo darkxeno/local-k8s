@@ -25,3 +25,6 @@ userInterface:
 rabbitmq:
   port: 5671
   serviceName: rabbitmq
+  auth:
+    username: user
+    password: "" # this should be stored in a secrets manager
