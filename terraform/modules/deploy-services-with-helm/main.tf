@@ -65,7 +65,12 @@ resource "helm_release" "rabbitmq" {
   set {
     name  = "auth.password"
     value = var.rabbitmq_password
-  }   
+  }
+
+  set {
+    name  = "auth.erlangCookie"
+    value = var.rabbitmq_password
+  }     
 
   depends_on = [ kubernetes_namespace.app-namespace ]
 }
