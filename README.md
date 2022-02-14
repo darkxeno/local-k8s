@@ -9,7 +9,7 @@ The following tools / software are required in order to successfully configure y
 - Terraform CLI
 - Git
 - Brew
-- Docker
+- Docker (for Apple Silicon computers please read this: https://docs.docker.com/desktop/mac/apple-silicon/)
  
 Support for additional OSs will be considered for the future, as well as a drop in replacement for docker (Lime) due to licensing changes of the docker desktop application.
  
@@ -43,11 +43,15 @@ Now we are ready to create and provision all our infrastructure and software:
 terraform init
  
  
-# to see all the resources that are going to be created
-terraform plan
+# to see all the cluster resources that are going to be created
+terraform plan -target=module.kubernetes-cluster
  
  
-# to perform the changes show on the previous command
+# to perform the changes show on the previous command:
+# first we create the k8s cluster to get the provider needed credentials
+terraform apply -target=module.kubernetes-cluster
+
+# now we execute the rest of the modules
 terraform apply
 ```
 
