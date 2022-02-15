@@ -10,6 +10,8 @@ The following tools / software are required in order to successfully configure y
 - Git
 - Brew
 - Docker (for Apple Silicon computers please read this: https://docs.docker.com/desktop/mac/apple-silicon/)
+
+There is *no support for ARM architectures* at the moment. For more information on this please check the notes below.
  
 Support for additional OSs will be considered for the future, as well as a drop in replacement for docker (Lime) due to licensing changes of the docker desktop application.
  
@@ -46,9 +48,7 @@ terraform init
 # to see all the cluster resources that are going to be created
 terraform plan -target=module.kubernetes-cluster
  
- 
-# to perform the changes show on the previous command:
-# first we create the k8s cluster to get the provider needed credentials
+# first we create the k8s cluster to get the helm and kubernetes provider credentials
 terraform apply -target=module.kubernetes-cluster
 
 # now we execute the rest of the modules
@@ -192,3 +192,25 @@ Error: Get "https://127.0.0.1:58082/api/v1/namespaces/dev": dial tcp 127.0.0.1:5
 ...
 ```
 
+
+The bitnami docker images for RabbitMQ doesn't offer support for ARM architectures at the moment. (for example: Apple Silicon computers, M1 arm64): 
+
+https://github.com/bitnami/bitnami-docker-rabbitmq/issues/186
+
+```
+kubectl logs rabbitmq-0 -n dev
+rabbitmq 08:38:53.48
+rabbitmq 08:38:53.51 Welcome to the Bitnami rabbitmq container
+rabbitmq 08:38:53.53 Subscribe to project updates by watching https://github.com/bitnami/bitnami-docker-rabbitmq
+rabbitmq 08:38:53.56 Submit issues and feature requests at https://github.com/bitnami/bitnami-docker-rabbitmq/issues
+rabbitmq 08:38:53.58
+rabbitmq 08:38:53.60 INFO  ==> ** Starting RabbitMQ setup **
+rabbitmq 08:38:53.79 INFO  ==> Validating settings in RABBITMQ_* env vars..
+rabbitmq 08:38:54.02 INFO  ==> Initializing RabbitMQ...
+rabbitmq 08:38:54.43 INFO  ==> Starting RabbitMQ in background...
+/opt/bitnami/scripts/libos.sh: line 336:   134 Segmentation fault      "$@" > /dev/null 2>&1
+/opt/bitnami/scripts/libos.sh: line 336:   232 Segmentation fault      "$@" > /dev/null 2>&1
+/opt/bitnami/scripts/libos.sh: line 336:   281 Segmentation fault      "$@" > /dev/null 2>&1
+```
+
+If you see error like this on the rabbitMQ logs you are affected by this issue.
